@@ -1,9 +1,12 @@
+fileserver_backend:
+  - git
+
 gitfs_remotes:
   - git@github.com:cgunning/salt-test.git:
     - root: "salt"
 
 ext_pillar:
-  - git: master git@github.com:cgunning/salt-test.git root=pillar
+  - git: __env__ git@github.com:cgunning/salt-test.git root=pillar
 
 # default_top: base
 top_file_merging_strategy: same
