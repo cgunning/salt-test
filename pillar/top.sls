@@ -1,4 +1,4 @@
-base:
+dev:
   '*':
     - install
     - test1
