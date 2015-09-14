@@ -1,2 +1,2 @@
 install:
-  package: vim
+  package: mc
