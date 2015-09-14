@@ -1,3 +1,3 @@
 install_it:
-  pkq.installed:
+  pkg.installed:
     - name: {{ pillar['install']['package'] }}
