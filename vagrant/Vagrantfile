@@ -1,0 +1,50 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.ssh.username = "root"
+  config.ssh.password = "vagrant"
+  config.vm.define "master", primary: true do |master|
+    master.vm.box = "rubicon/centos7-salt"
+    master.vm.network "private_network", ip: "10.0.0.10"
+
+    $script = <<-SCRIPT
+    yum install -y git
+    yum update -y
+    SCRIPT
+
+    master.vm.provision "shell", inline: $script, privileged: true
+
+    master.vm.synced_folder "../salt", "/srv/saltstack/salt"
+    master.vm.synced_folder "../pillar", "/srv/saltstack/pillar"
+    master.vm.synced_folder "../winrepo", "/srv/saltstack/winrepo"
+  end
+
+  config.vm.define "linux-minion" do |linuxminion|
+    linuxminion.vm.box = "rubicon/centos7-salt"
+    linuxminion.vm.network "private_network", ip: "10.0.0.20"
+
+    $script = <<-SCRIPT
+    yum install -y "http://ftp.acc.umu.se/mirror/fedora/epel/7/x86_64/e/epel-release-7-5.noarch.rpm" git salt-minion python-pip policycoreutils-python
+    yum update -y
+    pip install --upgrade jinja2
+    hostnamectl set-hostname linux-vagrant
+    echo -e "127.0.0.1 linux-vagrant localhost\n10.0.0.10 master-vagrant" > /etc/hosts
+    echo linux-vagrant > /etc/salt/minion_id
+    ln -sf /vagrant/salt/minion /etc/salt/minion
+    systemctl enable salt-minion
+    systemctl restart salt-minion
+    SCRIPT
+
+    linuxminion.vm.provision "shell", inline: $script, privileged: true
+  end
+
+  config.vm.define "windows-minion" do |winminion|
+    winminion.vm.box = "opentable/win-2012r2-standard-amd64-nocm"
+    winminion.vm.network "private_network", ip: "10.0.0.21"
+    winminion.vm.network "forwarded_port", guest: 3389, host: 33890
+
+    winminion.vm.provision "shell", path: 'scripts/windows-provisioning.ps1'
+  end
+
+end
