@@ -6,4 +6,4 @@ install_it:
 
 install_more:
   pkg.installed:
-    - name: {{ pillar['install']['package2'] }}
+    - name: {{ pillar['install']['test'] }}
